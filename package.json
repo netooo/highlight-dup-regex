@@ -1,19 +1,18 @@
 {
-  "name": "vscode-highlight",
-  "displayName": "Highlight",
-  "description": "Advanced text highlighter based on regexes. Useful for todos, annotations, colors etc.",
-  "icon": "resources/logo-128x128.png",
-  "version": "1.9.0",
+  "name": "highlight-dup-regex",
+  "displayName": "Highlight Dup Regex",
+  "description": "Advanced dup text highlighter based on regexes.",
+  "version": "1.0.1",
   "license": "MIT",
   "main": "out/extension.js",
-  "publisher": "fabiospampinato",
+  "publisher": "netooo",
   "activationEvents": [
     "*"
   ],
   "contributes": {
     "configuration": {
       "type": "object",
-      "title": "Highlight - Configuration",
+      "title": "highlight-dup-regex Configuration",
       "properties": {
         "highlight.decorations": {
           "type": "object",
@@ -526,44 +525,29 @@
     "postinstall": "node ./node_modules/vscode/bin/install",
     "test": "node ./node_modules/vscode/bin/test"
   },
-  "bugs": {
-    "url": "https://github.com/fabiospampinato/vscode-highlight/issues"
-  },
-  "author": {
-    "name": "Fabio Spampinato",
-    "email": "spampinabio@gmail.com"
-  },
+  "author": "netooo",
   "repository": {
     "type": "git",
-    "url": "https://github.com/fabiospampinato/vscode-highlight.git"
+    "url": "git+https://github.com/netooo/highlight-dup-regex.git"
   },
   "engines": {
     "vscode": "^1.15.0"
   },
   "keywords": [
     "vscode",
-    "highlight",
-    "text",
-    "todo",
-    "annotation",
-    "vsc",
-    "extension"
+    "highlight"
   ],
   "categories": [
     "Other"
   ],
-  "dependencies": {
-    "@types/node": "^10.12.8",
-    "lodash": "^4.17.4",
-    "pify": "^3.0.0",
-    "string-matches": "^1.1.0",
-    "vscode-beggar": "^1.0.1"
-  },
   "devDependencies": {
     "ts-loader": "^5.2.1",
     "typescript": "~4.5.5",
     "vscode": "^1.1.4",
     "webpack": "^4.20.2",
     "webpack-cli": "^3.1.2"
+  },
+  "dependencies": {
+    "string-matches": "^2.0.0"
   }
 }

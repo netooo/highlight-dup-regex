@@ -167,7 +167,10 @@ const Decorator = {
       const re = Decorator.getRegex ( reStr ),
             matches = stringMatches ( text, re, Decorator.config.maxMatches );
 
-      matches.forEach ( match => {
+      const matchCounts = _.countBy(matches, match => match[0]);
+      const dupMatches = matches.filter(match => matchCounts[match[0]] > 1);
+
+      dupMatches.forEach ( match => {
 
         let startIndex = match.index;
 

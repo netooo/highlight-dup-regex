@@ -7,6 +7,41 @@ import * as vscode from 'vscode';
 import Config from './config';
 import Utils from './utils';
 
+/* COLORS */
+
+const Colors = [
+  'rgba(255, 99, 132, 0.3)',
+  'rgba(54, 162, 235, 0.3)',
+  'rgba(255, 206, 86, 0.3)',
+  'rgba(75, 192, 192, 0.3)',
+  'rgba(153, 102, 255, 0.3)',
+  'rgba(255, 159, 64, 0.3)',
+  'rgba(255, 99, 132, 0.3)',
+  'rgba(54, 162, 235, 0.3)',
+  'rgba(255, 206, 86, 0.3)',
+  'rgba(75, 192, 192, 0.3)',
+  'rgba(153, 102, 255, 0.3)',
+  'rgba(255, 159, 64, 0.3)',
+  'rgba(199, 199, 199, 0.3)',
+  'rgba(83, 102, 255, 0.3)',
+  'rgba(99, 132, 255, 0.3)',
+  'rgba(235, 162, 54, 0.3)',
+  'rgba(86, 206, 255, 0.3)',
+  'rgba(192, 192, 75, 0.3)',
+  'rgba(255, 102, 153, 0.3)',
+  'rgba(64, 159, 255, 0.3)',
+  'rgba(132, 199, 255, 0.3)',
+  'rgba(54, 83, 162, 0.3)',
+  'rgba(86, 235, 206, 0.3)',
+  'rgba(102, 153, 255, 0.3)',
+  'rgba(159, 64, 255, 0.3)',
+  'rgba(255, 99, 132, 0.3)',
+  'rgba(54, 162, 235, 0.3)',
+  'rgba(255, 206, 86, 0.3)',
+  'rgba(75, 192, 192, 0.3)',
+  'rgba(153, 102, 255, 0.3)',
+];
+
 /* DECORATOR */
 
 const Decorator = {
@@ -121,6 +156,7 @@ const Decorator = {
 
   /* DECORATIONS */
 
+  decorationCache: {},
   decorations: {}, // Map of document id => decorations
 
   decorate ( target?: vscode.TextEditor | vscode.TextDocument, force?: boolean ) {
@@ -152,13 +188,6 @@ const Decorator = {
 
     Decorator.regexesStrs.forEach ( reStr => {
 
-      const types = Decorator.getTypes ( reStr );
-
-      types.forEach ( type => {
-          decorations.set ( type, [] );
-        }
-      );
-
       const options = Decorator.config.regexes[reStr],
             isFiltered = Utils.document.isFiltered ( doc, options );
 
@@ -166,37 +195,55 @@ const Decorator = {
 
       const re = Decorator.getRegex ( reStr ),
             matches = stringMatches ( text, re, Decorator.config.maxMatches );
+      const groupedMatches = _.groupBy(matches, match => match[0]);
+      const dupMatchGroups = _.filter(groupedMatches, group => group.length > 1);
 
-      const matchCounts = _.countBy(matches, match => match[0]);
-      const dupMatches = matches.filter(match => matchCounts[match[0]] > 1);
+      /* CLEAR ALL DECORATIONS */
+      const allMatches = Object.values(Decorator.decorationCache) as vscode.TextEditorDecorationType[];
+      for (const type of allMatches) {
+        textEditor.setDecorations(type, []);
+      }
 
-      dupMatches.forEach ( match => {
+      /* PREPARE SETTING */
+      dupMatchGroups.forEach ( (matchGroup, eachIndex) => {
+        
+        matchGroup.forEach ( match => {
 
-        let startIndex = match.index;
+          let startIndex = match.index;
+          const matchedString = match[0];
 
-        for ( let i = 1, l = match.length; i < l; i++ ) {
+          if (!Decorator.decorationCache[matchedString]) {
+            const decorationType = vscode.window.createTextEditorDecorationType({
+              backgroundColor: Colors[eachIndex]
+            });
+            Decorator.decorationCache[matchedString] = decorationType;
+          }
 
-          const value = match[i];
+          for ( let i = 1, l = match.length; i < l; i++ ) {
 
-          if ( _.isUndefined ( value ) ) continue;
+            const value = match[i];
 
-          const startPos = doc.positionAt ( startIndex ),
-                endPos = doc.positionAt ( startIndex + value.length ),
-                range = new vscode.Range ( startPos, endPos );
+            if ( _.isUndefined ( value ) ) continue;
 
-          let type = Decorator.getType ( reStr, i - 1 );
+            const startPos = doc.positionAt ( startIndex ),
+                  endPos = doc.positionAt ( startIndex + value.length ),
+                  range = new vscode.Range ( startPos, endPos );
 
-          if ( !type ) return;
+            let type = Decorator.decorationCache[matchedString];
 
-          if ( _.isFunction ( type ) ) type = type ( match );
+            if ( !type ) return;
 
-          const ranges = decorations.get ( type );
+            if ( _.isFunction ( type ) ) type = type ( match );
 
-          decorations.set ( type, ( ranges || [] ).concat ([ range ]) );
+            const ranges = decorations.get ( type );
 
-          startIndex += value.length;
+            decorations.set ( type, ( ranges || [] ).concat ([ range ]) );
 
-        }
+            startIndex += value.length;
+
+          }
+
+        });
 
       });
 
